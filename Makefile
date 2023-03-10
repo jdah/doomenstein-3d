@@ -1,14 +1,13 @@
 print-%:; @echo $($*)
 
-CC = $(shell brew --prefix llvm)/bin/clang
-LD = $(shell brew --prefix llvm)/bin/clang
+CC = gcc
+LD = gcc
 
 # library paths
 PATH_LIB = lib
 PATH_SDL = $(PATH_LIB)/SDL
 
 INCFLAGS = -iquotesrc
-INCFLAGS += -I$(PATH_SDL)/include
 
 CCFLAGS  = -std=c2x
 CCFLAGS += -O2
@@ -38,7 +37,6 @@ CCFLAGS += -Wno-c99-extensions
 CCFLAGS += -Wno-c11-extensions
 
 LDFLAGS = -lm
-LDFLAGS += $(shell $(BIN)/sdl/sdl2-config --prefix=$(BIN) --static-libs)
 
 BIN = bin
 SRC = $(shell find src -name "*.c")
@@ -48,7 +46,16 @@ OUT = $(BIN)/game
 
 -include $(DEP)
 
-all: dirs build
+UNAME := $(shell uname -s)
+ifeq ($(UNAME),Darwin)
+	CC = $(shell brew --prefix llvm)/bin/clang
+	LD = $(shell brew --prefix llvm)/bin/clang
+
+	INCFLAGS += -I$(PATH_SDL)/include
+	LDFLAGS += $(shell $(BIN)/sdl/sdl2-config --prefix=$(BIN) --static-libs)
+else ifeq ($(UNAME),Linux)
+	LDFLAGS += -lSDL2
+endif
 
 $(BIN):
 	mkdir -p $@
@@ -75,7 +82,7 @@ doom: dirs $(BIN)/src/main_doom.o
 wolf: dirs $(BIN)/src/main_wolf.o
 	$(LD) -o bin/wolf $(BIN)/src/main_wolf.o $(LDFLAGS)
 
-all: doom wolf
+all: dirs doom wolf
 
 clean:
 	rm -rf bin
