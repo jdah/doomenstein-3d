@@ -1,11 +1,12 @@
 print-%:; @echo $($*)
 
-CC = gcc
-LD = gcc
+CC = clang
+LD = clang
 
 # library paths
 PATH_LIB = lib
 PATH_SDL = $(PATH_LIB)/SDL
+PATH_SDL_LINUX = /usr/include/SDL2
 
 INCFLAGS = -iquotesrc
 
@@ -55,6 +56,7 @@ ifeq ($(UNAME),Darwin)
 	LDFLAGS += $(shell $(BIN)/sdl/sdl2-config --prefix=$(BIN) --static-libs)
 else ifeq ($(UNAME),Linux)
 	LDFLAGS += -lSDL2
+	INCFLAGS += -I$(PATH_SDL_LINUX)
 endif
 
 $(BIN):
